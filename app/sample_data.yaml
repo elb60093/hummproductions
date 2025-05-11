@@ -1,0 +1,18 @@
+videos:
+  - title: "Beehold DocuPod"
+    youtube_id: "9uaieTIhyR0"
+    description: "Exploring Wisconsin's pollinators"
+    podcasts:
+      - platform: "libsyn"
+        episode_id: "32087727"
+      - platform: "apple"
+        episode_id: "1451455282?i=1000533013860"
+      - platform: "spotify"
+        episode_id: "5uS5pKPdg2fiTO36PJeLs7"
+
+  - title: "Future DocuPod Example"
+    youtube_id: "ABCDEFGHIJK"
+    description: "Sample future episode"
+    podcasts:
+      - platform: "rss"
+        episode_id: "feed.xml"

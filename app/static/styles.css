@@ -1,0 +1,66 @@
+/* Base styles for the whole app */
+body {
+    font-family: 'Montserrat', sans-serif;
+    background: #fff;
+    color: #555555;
+    margin: 0;
+    padding: 0;
+}
+
+/* Logo styling */
+.humm-logo {
+    display: block;
+    margin: 0 auto 24px auto;
+    max-width: 280px;
+    height: auto;
+}
+
+/* Main heading */
+h1 {
+    text-align: center;
+    font-weight: 700;
+    margin-bottom: 32px;
+    color: #555555;
+}
+
+/* Video list styling */
+.list-group-item {
+    font-size: 1.1rem;
+    color: #555555;
+    border-color: #e40404;
+    transition: background 0.2s, color 0.2s;
+    background: #fff;
+}
+
+.list-group-item:hover,
+.list-group-item:focus {
+    background: #e40404;
+    color: #fff;
+    outline: 2px solid #e40404;
+    outline-offset: 2px;
+}
+
+/* Emphasized text and hyperlinks */
+a {
+    color: #e40404;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a:hover,
+a:focus {
+    color: #b30303;
+    text-decoration: underline;
+}
+
+/* Responsive container for Bootstrap */
+.container {
+    max-width: 700px;
+}
+
+/* Responsive logo for mobile screens */
+@media (max-width: 600px) {
+    .humm-logo {
+        max-width: 90vw;
+    }
+}

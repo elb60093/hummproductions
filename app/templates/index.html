@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="description" content="Browse available DocuPod videos from Humm Productions.">
+        <title>Available DocuPods</title>
+        <!-- Bootstrap CSS for layout and components -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Google Fonts: Montserrat for brand consistency -->
+        <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap" rel="stylesheet">
+        <!-- Custom styles for Humm Productions branding -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+        <!-- Responsive design for mobile devices -->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Favicon -->
+        <link rel="icon" href="{{ url_for('static', filename='images/humm_icon.png') }}" type="image/png">
+    </head>
+
+    <body class="container mt-4">
+        <!-- Humm Productions Logo at the top -->
+        <img src="{{ url_for('static', filename='images/humm_logo.png') }}" alt="Humm Productions Logo" class="humm-logo">
+
+        <h1>Available Videos</h1>
+        <!--
+    List of available videos.
+    Uses Jinja2 templating (Flask/Django style) to loop through video data passed from backend.
+    Each video is a clickable Bootstrap list group item linking to its detail page.
+    -->
+        <div class="list-group">
+            {% for video in videos %}
+                <a href="/video/{{ video[0] }}" class="list-group-item list-group-item-action">
+                    {{ video[1] }}
+                </a>
+            {% endfor %}
+        </div>
+    </body>
+
+</html>
