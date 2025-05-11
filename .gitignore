@@ -16,3 +16,21 @@ _site/
 # counterproductive to check this file into the repository.
 # Details at https://github.com/github/pages-gem/issues/768
 Gemfile.lock
+# Ignore bundler config.
+/.bundle
+
+# Ignore the built site
+_site
+
+# Ignore cache
+.sass-cache
+.jekyll-cache
+
+# Ignore gemfiles
+Gemfile.lock
+
+# Ignore node modules (if using npm for tooling)
+node_modules/
+
+# macOS system files
+.DS_Store
