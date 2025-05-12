@@ -11,8 +11,8 @@ videos:
         episode_id: "5uS5pKPdg2fiTO36PJeLs7"
 
   - title: "Future DocuPod Example"
-    youtube_id: "ABCDEFGHIJK"
-    description: "Sample future episode"
+    youtube_id: "GqMUAdkrhfQ"
+    description: "Sample future episode - Humm Productions Sizzle Reel"
     podcasts:
       - platform: "rss"
         episode_id: "feed.xml"

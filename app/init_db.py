@@ -1,102 +1,183 @@
 """
-init_db.py: Initialize or reset the DocuPod database and optionally insert sample data.
+init_db.py - Enhanced Database Initialization Script
 
-Usage:
-    python init_db.py --reset --sample
-
-Options:
-    --reset   Drop and recreate tables using schema.sql
-    --sample  Insert sample data from sample_data.yaml
-
-This script is intended for local development and testing. It helps ensure the database schema is up to date
-and optionally populates the database with example data for demonstration or testing purposes.
+Key Improvements:
+1. Absolute path resolution for all file operations
+2. Foreign key constraint enforcement
+3. Comprehensive data validation
+4. Granular error handling with cleanup
+5. Production-grade logging
+6. Schema existence checks
+7. YAML format validation
+8. Platform normalization
+9. Transaction safety
+10. Verbose mode support
 """
 
 import sqlite3
 import click
-import yaml  # pip install pyyaml
+import yaml
 import os
 import sys
+import logging
+from typing import Dict, Any
 
+# Configure logging
+logging.basicConfig(
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+def validate_video_data(video: Dict[str, Any]) -> bool:
+    """Validate video entry structure from YAML"""
+    required_fields = {'title', 'youtube_id', 'description'}
+    if not all(field in video for field in required_fields):
+        logger.error("Missing required video fields")
+        return False
+    if len(video['youtube_id']) < 5:  # Minimum YouTube ID length
+        logger.error(f"Invalid YouTube ID: {video['youtube_id']}")
+        return False
+    return True
+
+def validate_podcast_data(podcast: Dict[str, Any]) -> bool:
+    """Validate podcast entry structure"""
+    required_fields = {'platform', 'episode_id'}
+    if not all(field in podcast for field in required_fields):
+        logger.error("Missing required podcast fields")
+        return False
+    if not podcast['episode_id']:
+        logger.error("Empty episode ID")
+        return False
+    return True
 
 @click.command()
-@click.option('--reset', is_flag=True, help='Drop existing tables and recreate schema.')
-@click.option('--sample', is_flag=True, help='Insert sample data from YAML file.')
-def init_db(reset, sample):
+@click.option('--reset', is_flag=True, help='Recreate database schema from scratch')
+@click.option('--sample', is_flag=True, help='Insert sample data from YAML')
+@click.option('--verbose', is_flag=True, help='Enable detailed logging')
+def init_db(reset: bool, sample: bool, verbose: bool) -> None:
     """
-    Initialize database with optional reset and sample data.
+    Robust database initialization workflow with safety checks
 
-    Args:
-        reset (bool): If True, drop and recreate tables using schema.sql.
-        sample (bool): If True, insert sample data from sample_data.yaml.
+    Features:
+    - Ensures foreign key constraints
+    - Validates data before insertion
+    - Maintains transaction integrity
+    - Provides detailed error reporting
     """
-    db_path = 'docupod.db'
-    # Build absolute paths to schema and sample data files
-    schema_path = os.path.join(os.path.dirname(__file__), 'schema.sql')
-    sample_path = os.path.join(os.path.dirname(__file__), 'sample_data.yaml')
 
+    # Configure paths using absolute references
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(base_dir, 'docupod.db')
+    schema_path = os.path.join(base_dir, 'schema.sql')
+    sample_path = os.path.join(base_dir, 'sample_data.yaml')
+
+    if verbose:
+        logger.setLevel(logging.DEBUG)
+        logger.debug("Configuration:")
+        logger.debug(f"Database path: {db_path}")
+        logger.debug(f"Schema path: {schema_path}")
+        logger.debug(f"Sample path: {sample_path}")
+
+    conn = None  # Initialize for finally block safety
     try:
-        # Connect to the SQLite database (creates file if it doesn't exist)
+        # Establish connection with foreign key support
         conn = sqlite3.connect(db_path)
+        conn.execute("PRAGMA foreign_keys = ON;")
         cur = conn.cursor()
 
-        # If --reset flag is used, drop and recreate all tables
+        # --- Schema Management ---
         if reset:
-            print("Resetting database...")
-            try:
-                with open(schema_path) as f:
-                    conn.executescript(f.read())
-            except FileNotFoundError:
-                print(f"Error: {schema_path} not found.")
-                sys.exit(1)
+            logger.info("Resetting database schema...")
+            if not os.path.exists(schema_path):
+                raise FileNotFoundError(f"Schema file missing: {schema_path}")
 
-        # Always ensure tables exist by running schema.sql
-        try:
             with open(schema_path) as f:
                 conn.executescript(f.read())
-        except FileNotFoundError:
-            print(f"Error: {schema_path} not found.")
-            sys.exit(1)
+            logger.debug("Schema reset complete")
+        else:
+            # Check for existing tables
+            cur.execute("""SELECT name FROM sqlite_master
+                        WHERE type='table' AND name='videos'""")
+            if not cur.fetchone():
+                logger.info("Creating initial schema...")
+                with open(schema_path) as f:
+                    conn.executescript(f.read())
 
-        # If --sample flag is used, insert sample data from YAML
+        # --- Sample Data Insertion ---
         if sample:
-            print("Inserting sample data...")
+            logger.info("Loading sample data...")
+            if not os.path.exists(sample_path):
+                raise FileNotFoundError(f"Sample data missing: {sample_path}")
+
+            # Validate YAML structure
             try:
                 with open(sample_path) as f:
                     data = yaml.safe_load(f)
-            except FileNotFoundError:
-                print(f"Error: {sample_path} not found.")
-                sys.exit(1)
+            except yaml.YAMLError as e:
+                raise ValueError(f"Invalid YAML format: {e}") from None
 
-            # Iterate over each video entry in the YAML file
+            if 'videos' not in data or not isinstance(data['videos'], list):
+                raise ValueError("Invalid sample data structure")
+
+            # Transaction block for data insertion
+            inserted_videos = 0
+            inserted_podcasts = 0
+
             for video in data['videos']:
-                # Insert video record into videos table
-                cur.execute('''
+                if not validate_video_data(video):
+                    raise ValueError(f"Invalid video: {video.get('title')}")
+
+                # Insert video
+                cur.execute("""
                     INSERT INTO videos (title, youtube_id, description)
                     VALUES (?, ?, ?)
-                ''', (video['title'], video['youtube_id'], video['description']))
-                video_id = cur.lastrowid  # Get the auto-generated video ID
+                """, (
+                    video['title'],
+                    video['youtube_id'],
+                    video['description']
+                ))
+                video_id = cur.lastrowid
+                inserted_videos += 1
 
-                # Insert associated podcasts for this video
+                # Insert podcasts
                 for podcast in video.get('podcasts', []):
-                    cur.execute('''
+                    if not validate_podcast_data(podcast):
+                        raise ValueError(f"Invalid podcast in video {video_id}")
+
+                    # Normalize platform name
+                    platform = podcast['platform'].lower()
+
+                    cur.execute("""
                         INSERT INTO podcasts (video_id, platform, episode_id)
                         VALUES (?, ?, ?)
-                    ''', (video_id, podcast['platform'], podcast['episode_id']))
+                    """, (
+                        video_id,
+                        platform,
+                        podcast['episode_id']
+                    ))
+                    inserted_podcasts += 1
 
-        # Commit all changes to the database
+            logger.info(f"Inserted {inserted_videos} videos and {inserted_podcasts} podcasts")
+
+        # Final commit
         conn.commit()
-        print("Database initialized successfully!")
+        logger.info("Database initialization completed successfully")
 
+    except (sqlite3.Error, FileNotFoundError, ValueError) as e:
+        logger.error(f"Initialization failed: {str(e)}")
+        if conn:
+            conn.rollback()
+        sys.exit(1)
     except Exception as e:
-        # Roll back any changes if an error occurs
-        conn.rollback()
-        print(f"Error: {str(e)}")
+        logger.critical(f"Unexpected error: {str(e)}", exc_info=True)
+        if conn:
+            conn.rollback()
         sys.exit(1)
     finally:
-        # Always close the database connection
-        conn.close()
-
+        if conn:
+            conn.close()
+            logger.debug("Database connection closed")
 
 if __name__ == '__main__':
     init_db()

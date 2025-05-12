@@ -1,66 +1,103 @@
-DocuPod™ Video-Podcast Bridge
+# DocuPod™ Video-Podcast Bridge
 
-DocuPod™ is a lightweight, cross-platform web application that bridges DocuPod™ videos with their associated podcasts. The app provides an elegant, branded interface for users to browse available DocuPod™ videos, watch them, and access related podcast episodes on various platforms.
+DocuPod™ is a lightweight, cross-platform web application that bridges DocuPod™ videos with their associated podcasts, providing a branded, user-friendly interface for browsing, watching, and listening. This project was developed as a CS50 final project.
 
-Features
-  •	Responsive, accessible web interface using Flask, Bootstrap, and custom CSS.
-  •	Video listing page (index.html) displaying all available DocuPod™ videos.
-  •	Individual video detail pages (video.html) with embedded YouTube player and associated podcast links/embeds (Libsyn, Apple, Spotify, RSS).
-  •	Dynamic video switching on the detail page (via JavaScript, no page reload).
-  •	Logos for Humm Productions, Apple Podcasts, and Spotify for clear branding and user recognition.
-  •	SQLite database backend for videos and podcasts.
-  •	Easy database initialization with CLI tool (init_db.py) and YAML sample data.
-  •	Custom 404 error page.
-  •	Clean project structure with separated static assets and templates.
-  •	Ready for deployment to GitHub Pages and custom subdomain with iframe integration.
+---
 
-Setup & Usage
-1. Install dependencies
-    pip install flask click pyyaml
+## Table of Contents
 
-2. Initialize the database
-    python init_db.py --reset --sample
-    •	This will create docupod.db and populate it with sample data (sample_data.yaml).
-3. Run the app locally
-    flask run
-    or
-    python app.py
+- [Project Overview](#project-overview)
+- [Features](#features)
+- [Installation & Usage](#installation--usage)
+- [Project Structure](#project-structure)
+- [Demo Video](#demo-video)
+- [Known Issues & Limitations](#known-issues--limitations)
+- [Contact](#contact)
 
-4. Access the app
-    •	Open your browser to http://localhost:5000
+---
 
-Deployment
-  •	To deploy on GitHub Pages, build a static version of the site or use a service like Render or Heroku for Flask apps.
-  •	To use a custom subdomain (e.g., app.hummproductions.org), point your DNS to the deployed app and embed it with an <iframe> on your main site.
-  •	All static assets (images, CSS) are in the static/ directory for easy serving.
+## Project Overview
 
-Project Structure
-/project-root
-  /static
-    /images
-      humm_logo.png
-      humm_icon.png
-      apple_podcast.png
-      spotify.png
-    /css
-      styles.css
-  /templates
-    index.html
-    video.html
-    404.html
-  app.py
-  database.py (optional, if separated)
-  init_db.py
-  schema.sql
-  sample_data.yaml
-  README.md
-  DESIGN.md
+DocuPod™ connects video content with related podcasts, leveraging pre-existing services (YouTube, Libsyn, Apple Podcasts, Spotify) and a minimal custom backend. The app is designed for easy deployment and cross-platform compatibility, with a focus on maintainability and a branded user experience.
 
+---
 
-Known Issues / To-Do
-•	Add more sample data for broader testing.
-•	Finalize deployment and update documentation with public URLs.
-•	Optional: Add user authentication or search/filter features.
+## Features
 
-Demo Video
-[Insert YouTube link here after recording screencast]
+- **Responsive Home Page:** Browse all available DocuPod™ videos.
+- **Video Detail Pages:** Watch embedded YouTube videos and access dynamically generated podcast links/embeds for each platform.
+- **Dynamic Video Switching:** Seamless video changes via JavaScript without page reloads.
+- **Branding:** Includes Humm Productions, Apple Podcasts, and Spotify logos.
+- **Custom 404 Page:** Friendly error page for missing resources.
+- **CLI Tool:** Easily initialize/reset the database and load sample data.
+
+---
+
+## Installation & Usage
+
+### 1. Install dependencies
+
+pip install flask click pyyaml
+text
+
+### 2. Initialize the database
+
+python init_db.py --reset --sample
+text
+
+### 3. Run the app
+
+python app.py
+text
+- Open [http://localhost:5000](http://localhost:5000) in your browser.
+
+### 4. Deployment
+
+- The app is ready for deployment to a custom subdomain or cloud service. (DNS for the custom subdomain is pending and will be updated here upon resolution.)
+
+---
+
+## Project Structure
+
+/
+├── app.py
+├── init_db.py
+├── sample_data.yaml
+├── docupod.db
+├── schema.sql
+├── static/
+│ ├── css/
+│ │ └── styles.css
+│ └── images/
+│ ├── humm_logo.png
+│ ├── humm_icon.png
+│ ├── apple.png
+│ └── spotify.png
+├── templates/
+│ ├── index.html
+│ ├── video.html
+│ └── 404.html
+├── README.md
+└── DESIGN.md
+text
+
+---
+
+## Demo Video
+
+A short demo video (≤3 min) will be uploaded to YouTube and linked here before submission.
+
+---
+
+## Known Issues & Limitations
+
+- **Read-only app:** No user uploads or authentication.
+- **Static Podcast Platforms:** Podcast platforms are statically configured in code.
+- **Scalability:** For larger content libraries, consider migrating from SQLite to a more robust database.
+
+---
+
+## Contact
+
+- **Lee Bechtold**
+- Email: Lee@Bechtold4.com
